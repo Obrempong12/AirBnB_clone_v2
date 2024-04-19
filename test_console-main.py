@@ -7,7 +7,7 @@ import shutil
 import os
 
 """
-Cleanup file storage
+Cleanup file storages
 """
 import os
 file_path = "file.json"
