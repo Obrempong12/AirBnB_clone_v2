@@ -6,7 +6,7 @@ import cmd
 import shutil
 
 """
-Cleanup file storage
+Cleanup file storages
 """
 import os
 file_path = "file.json"
