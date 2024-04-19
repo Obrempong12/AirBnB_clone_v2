@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3
 """Defines unittests for console.py."""
 import unittest
@@ -147,4 +146,3 @@ class TestHBNBCommand(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
