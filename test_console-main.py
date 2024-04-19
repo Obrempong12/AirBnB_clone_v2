@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import io
 import inspect
 import sys
@@ -10,6 +9,7 @@ import os
 """
 Cleanup file storage
 """
+import os
 file_path = "file.json"
 if not os.path.exists(file_path):
     try:
@@ -159,6 +159,7 @@ if "latitude" not in result or str(place_lat) not in result:
 
 if "longitude" not in result or str(place_lon) not in result:
     print("FAIL: missing new information: \"{}\"".format(result))
+
 
 print("OK", end="")
 
