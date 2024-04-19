@@ -4,8 +4,11 @@ import inspect
 import sys
 import cmd
 import shutil
-import os
 
+"""
+Cleanup file storage
+"""
+import os
 file_path = "file.json"
 if not os.path.exists(file_path):
     try:
