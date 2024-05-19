@@ -1,87 +1,86 @@
-
-$html="
-<html lang='en'>
-    <head>
-        <title>Airbnb Clone</title>
-        <style>
-        .container {
-            margin: 0 auto;
-        }
-
-        .text {
-            font-size: 2em;
-            text-align: center;
-        }
-
-        hr {
-            border: 2px solid black;
-        }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <h1 class='text'>Yep, it works. I am ${::facts['networking']['hostname']}</h1>
-            <hr>
-        </div>
-    </body>
-</html>
-"
-
-$alias_config="
+# Nginx configuration file
+$nginx_conf = "server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    add_header X-Served-By ${hostname};
+    root   /var/www/html;
+    index  index.html index.htm;
     location /hbnb_static {
-        alias /data/web_static/current/;
+        alias /data/web_static/current;
+        index index.html index.htm;
     }
-"
-
-exec { 'update packages list':
-  command => '/usr/bin/apt-get update -y',
-  path    => '/usr/bin:/usr/sbin:/bin',
-}
+    location /redirect_me {
+        return 301 https://th3-gr00t.tk;
+    }
+    error_page 404 /404.html;
+    location /404 {
+      root /var/www/html;
+      internal;
+    }
+}"
 
 package { 'nginx':
-  ensure => installed,
-  require => Exec['update packages list'],
-}
+  ensure   => 'present',
+  provider => 'apt'
+} ->
 
-file { ['/data/',
-        '/data/web_static/',
-        '/data/web_static/shared/',
-        '/data/web_static/releases',
-        '/data/web_static/releases/test',]:
-    ensure  => 'directory',
-    owner   => 'ubuntu',
-    group   => 'ubuntu',
-    mode    => '0755',
-    require => Package['nginx'],
-    recurse => true,
-}
+file { '/data':
+  ensure  => 'directory'
+} ->
+
+file { '/data/web_static':
+  ensure => 'directory'
+} ->
+
+file { '/data/web_static/releases':
+  ensure => 'directory'
+} ->
+
+file { '/data/web_static/releases/test':
+  ensure => 'directory'
+} ->
+
+file { '/data/web_static/shared':
+  ensure => 'directory'
+} ->
 
 file { '/data/web_static/releases/test/index.html':
-    ensure  => 'present',
-    content => $html,
-    owner   => 'ubuntu',
-    group   => 'ubuntu',
-    mode    => '0644',
-    require => File['/data/web_static/releases/test'],
-}
+  ensure  => 'present',
+  content => "Holberton School Puppet\n"
+} ->
 
 file { '/data/web_static/current':
-    ensure  => 'link',
-    target  => '/data/web_static/releases/test',
-    require => File['/data/web_static/releases/test/index.html'],
-    owner   => 'ubuntu',
-    group   => 'ubuntu',
+  ensure => 'link',
+  target => '/data/web_static/releases/test'
+} ->
+
+exec { 'chown -R ubuntu:ubuntu /data/':
+  path => '/usr/bin/:/usr/local/bin/:/bin/'
 }
 
-exec { 'update_nginx_config':
-  command => "sed -i '/server_name _;/a ${alias_config}' /etc/nginx/sites-available/default",
-  unless  => 'grep -q "location /hbnb_static {" /etc/nginx/sites-available/default',
-  require => File['/data/web_static/current'],
-  path    => '/usr/bin:/usr/sbin:/bin',
-}
+file { '/var/www':
+  ensure => 'directory'
+} ->
 
-service { 'nginx':
-    ensure    => 'running',
-    enable    => 'true',
-    subscribe => Exec['update_nginx_config'],
+file { '/var/www/html':
+  ensure => 'directory'
+} ->
+
+file { '/var/www/html/index.html':
+  ensure  => 'present',
+  content => "Holberton School Nginx\n"
+} ->
+
+file { '/var/www/html/404.html':
+  ensure  => 'present',
+  content => "Ceci n'est pas une page\n"
+} ->
+
+file { '/etc/nginx/sites-available/default':
+  ensure  => 'present',
+  content => $nginx_conf
+} ->
+
+exec { 'nginx restart':
+  path => '/etc/init.d/'
 }
